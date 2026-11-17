@@ -1,0 +1,11 @@
+const theme=document.querySelector('.theme');
+function applyTheme(dark){document.body.classList.toggle('dark',dark);theme?.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');}
+try{applyTheme(localStorage.getItem('gd-theme')==='dark');}catch{}
+theme?.addEventListener('click',()=>{const dark=!document.body.classList.contains('dark');applyTheme(dark);try{localStorage.setItem('gd-theme',dark?'dark':'light');}catch{}});
+const menu=document.querySelector('.menu'),nav=document.querySelector('nav');menu?.addEventListener('click',()=>{let open=nav.classList.toggle('open');menu.setAttribute('aria-expanded',open);menu.setAttribute('aria-label',open?'Close navigation':'Open navigation');});
+nav?.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');menu?.setAttribute('aria-expanded','false');}));
+document.querySelectorAll('[data-interest]').forEach(a=>a.addEventListener('click',()=>{const interest=document.querySelector('#interest');if(interest)interest.value=a.dataset.interest;}));
+const colourFilters={Blue:'',Red:'hue-rotate(155deg) saturate(1.25)',Black:'grayscale(1) brightness(.53) contrast(1.15)',Grey:'grayscale(1) brightness(.95)'};
+function previewColour(img,colour){if(!img)return;img.style.filter=(colourFilters[colour]||'')+' drop-shadow(10px 15px 10px #0002)';img.alt=colour+' Green Drift electric scooter colour preview';}
+document.querySelectorAll('.swatch').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.swatch').forEach(s=>{s.classList.remove('active');s.setAttribute('aria-pressed','false');});b.classList.add('active');b.setAttribute('aria-pressed','true');const colour=b.dataset.colour;document.querySelector('#colour-label').textContent=colour;document.querySelector('#colour-note').textContent=colour+' colour preview. Confirm vehicle availability with the Kurla team.';previewColour(document.querySelector('#fleet-bike'),colour);previewColour(document.querySelector('.hero-bike'),colour);document.querySelector('.art-bottom span').textContent=colour.toUpperCase()+' EDITION';document.querySelector('.rider-link').href='/rent.html?colour='+encodeURIComponent(colour);}));
+document.querySelector('#disclosures')?.addEventListener('click',()=>{const p=document.querySelector('.disclosure');p.hidden=!p.hidden;});
