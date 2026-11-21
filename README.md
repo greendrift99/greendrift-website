@@ -34,3 +34,16 @@ Run `npm test` (no dependencies required). Tests cover the API bridge's request 
 Investment calculations are illustrative; the site explains assumptions and does not collect investment payments. Rental prices are not publicly displayed.
 
 Custom domains should be attached only after the Vercel deployment and forms have been verified. No DNS changes are required for the initial Vercel preview URL.
+
+## Lead email notifications
+
+Contact and investor enquiries are saved by the existing backend before a Resend
+notification is sent to `contact@greendrift.in`. Set `RESEND_API_KEY` and
+`RESEND_EMAIL_DOMAIN` through the Resend Vercel integration. The sending subdomain
+is `mail.greendrift.in`; complete the DNS verification in the integration dashboard.
+Emails include contact details, enquiry reference and selected investment inputs.
+The visitor's email becomes Reply-To; the recipient is fixed server-side.
+Temporary send failures retry once with a stable idempotency key. Saved enquiries
+still succeed if email is unavailable. Check Vercel logs for `lead_email_failed`
+or `lead_email_unconfigured` and recover the enquiry from the saved backend using
+its reference. There is no automatic retry queue beyond the immediate retry.
