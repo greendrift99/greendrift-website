@@ -1,0 +1,13 @@
+CREATE TABLE IF NOT EXISTS market_users(id text PRIMARY KEY,email text NOT NULL UNIQUE,created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS market_codes(email text PRIMARY KEY,hash text NOT NULL,attempts int NOT NULL DEFAULT 0,expires_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS market_sessions(hash text PRIMARY KEY,user_id text NOT NULL REFERENCES market_users(id),expires_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS market_limits(key text PRIMARY KEY,count int NOT NULL DEFAULT 1,expires_at timestamptz NOT NULL);
+CREATE TABLE IF NOT EXISTS market_sellers(id text PRIMARY KEY,user_id text UNIQUE NOT NULL REFERENCES market_users(id),business text NOT NULL,name text NOT NULL,phone text NOT NULL,city text NOT NULL,gstin text NOT NULL DEFAULT '',description text NOT NULL,status text NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','approved','rejected')),review_note text NOT NULL DEFAULT '',created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS market_products(id text PRIMARY KEY,seller_id text NOT NULL REFERENCES market_sellers(id),title text NOT NULL,category text NOT NULL,description text NOT NULL,price_paise bigint NOT NULL CHECK(price_paise>0),stock int NOT NULL CHECK(stock>=0),brand text NOT NULL,compatibility text NOT NULL,image_url text NOT NULL DEFAULT '',status text NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','approved','rejected')),review_note text NOT NULL DEFAULT '',created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS market_orders(id text PRIMARY KEY,user_id text NOT NULL REFERENCES market_users(id),seller_id text NOT NULL REFERENCES market_sellers(id),product_id text NOT NULL REFERENCES market_products(id),product_title text NOT NULL,quantity int NOT NULL CHECK(quantity>0),unit_price_paise bigint NOT NULL,name text NOT NULL,phone text NOT NULL,address text NOT NULL,status text NOT NULL DEFAULT 'requested' CHECK(status IN ('requested','accepted','dispatched','delivered','cancelled')),created_at timestamptz NOT NULL DEFAULT now());
+CREATE TABLE IF NOT EXISTS market_audit(id text PRIMARY KEY,actor_id text NOT NULL REFERENCES market_users(id),entity text NOT NULL,entity_id text NOT NULL,action text NOT NULL,note text NOT NULL DEFAULT '',created_at timestamptz NOT NULL DEFAULT now());
+CREATE INDEX IF NOT EXISTS market_products_public ON market_products(status,category);
+CREATE INDEX IF NOT EXISTS market_orders_user ON market_orders(user_id);
+CREATE INDEX IF NOT EXISTS market_sessions_expiry ON market_sessions(expires_at);
+ALTER TABLE market_orders ADD COLUMN IF NOT EXISTS request_key text;
+CREATE UNIQUE INDEX IF NOT EXISTS market_orders_request_key ON market_orders(request_key);

@@ -47,3 +47,35 @@ Temporary send failures retry once with a stable idempotency key. Saved enquirie
 still succeed if email is unavailable. Check Vercel logs for `lead_email_failed`
 or `lead_email_unconfigured` and recover the enquiry from the saved backend using
 its reference. There is no automatic retry queue beyond the immediate retry.
+
+## Custom EV marketplace
+
+The storefront at `/ev-marketplace` and seller/admin/account screens use
+`/api/marketplace` with Neon Postgres. Apply the additive schema with
+`node --env-file=.env.local scripts/market-migrate.mjs` before deployment.
+Required runtime configuration: `DATABASE_URL`, `LEAD_PROXY_KEY` (OTP HMAC key),
+`RESEND_API_KEY` and `RESEND_EMAIL_DOMAIN`. Never expose these to the browser.
+
+Sign-in codes expire in 10 minutes, allow five verification attempts and are
+consumed atomically. Session tokens are random, stored hashed and delivered only
+in a Secure, HttpOnly, SameSite=Lax cookie. Writes enforce the website origin and
+shared database rate limits. Admin access requires email verification as
+`contact@greendrift.in`; this is checked server-side on every admin action.
+Seller applications and product submissions start pending. Product edits return
+to pending. Public reads require both product and seller to be approved. Review
+changes are audited. Seller suspension hides all their listings immediately.
+
+The current release supports seller-confirmed **order requests**, not prepaid
+checkout. Prices and seller identity are read on the server; request keys prevent
+duplicate requests. Requests do not reserve inventory. Seller statuses are
+requested → accepted → dispatched → delivered, with cancellation before dispatch.
+Tax/shipping totals, payment gateway, commissions, refunds/disputes and automated
+seller settlements are not implemented. Seller verification is a manual admin
+review, not automated KYC. Images use seller-provided HTTPS URLs, not file uploads.
+No demo accounts, inventory, ratings or stock are seeded.
+
+`npm test` checks request guards and input validation. Run
+`node --env-file=.env.local scripts/market-integration.mjs` for the real database
+workflow in uniquely prefixed temporary tables; it mocks email delivery, tests
+OTP, approvals, isolation, order transitions and idempotency, then removes its
+own tables. It does not send emails or seed production listings.
