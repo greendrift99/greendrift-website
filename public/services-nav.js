@@ -1,0 +1,2 @@
+const dropdown=document.querySelector('.service-dropdown');
+if(dropdown){document.addEventListener('click',e=>{if(!dropdown.contains(e.target))dropdown.open=false;});document.addEventListener('keydown',e=>{if(e.key==='Escape'&&dropdown.open){dropdown.open=false;dropdown.querySelector('summary').focus();}});document.querySelector('.menu')?.addEventListener('click',()=>{if(!document.querySelector('nav').classList.contains('open'))dropdown.open=false;});}
